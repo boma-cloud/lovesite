@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>D&E</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+
+<style>
+:root{--bg:#fff9fb;--accent:#f5a7c1;--text:#2a2130}
+*{box-sizing:border-box}
+body{margin:0;font-family:Poppins;background:var(--bg);color:var(--text);overflow-x:hidden}
+
+/* HEARTS */
+.heart{position:fixed;bottom:-20px;color:#f5a7c1;font-size:18px;animation:floatUp linear forwards}
+@keyframes floatUp{0%{transform:translateY(0)}100%{transform:translateY(-110vh);opacity:0}}
+
+/* WELCOME */
+#welcome{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;z-index:999}
+.logo{font-family:'Dancing Script';font-size:100px;color:var(--accent);animation:beat 1s infinite, glow 2s infinite}
+@keyframes beat{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes glow{0%{text-shadow:0 0 5px #f5a7c1}50%{text-shadow:0 0 20px #ffc6da}100%{text-shadow:0 0 5px #f5a7c1}}
+
+.fancy-btn{padding:14px 28px;border-radius:30px;border:none;background:linear-gradient(135deg,#f5a7c1,#ffc6da);color:white;font-weight:600;cursor:pointer;box-shadow:0 8px 20px rgba(245,167,193,.4);margin:6px}
+
+/* SITE */
+#site{display:none}
+main{max-width:600px;margin:auto;padding:25px}
+
+.menu{display:flex;flex-direction:column;gap:12px;margin-top:20px}
+.menu div{padding:16px;border-radius:18px;background:#fdf1f6;text-align:center;cursor:pointer}
+
+section{display:none}
+section.active{display:block}
+.back{color:var(--accent);cursor:pointer;margin-bottom:10px}
+
+/* NOTES */
+.tabs{display:flex;gap:10px;margin-bottom:10px}
+.tab{flex:1;padding:12px;border-radius:14px;text-align:center;background:#f3e6f0;cursor:pointer}
+.tab.active{background:var(--accent);color:white}
+
+.note{padding:14px;border-radius:14px;background:#fff;margin-top:10px;cursor:pointer}
+
+/* NEW NOTE */
+#newNotePage{position:fixed;inset:0;background:#fff;display:none;flex-direction:column;padding:20px;z-index:999}
+#newNotePage input{border:none;font-size:20px;font-weight:600}
+#newNotePage textarea{flex:1;border:none;font-size:16px;margin-top:10px}
+
+/* LETTER */
+#letter{position:fixed;inset:0;background:#fff;display:none;flex-direction:column;padding:30px;z-index:999}
+
+</style>
+</head>
+
+<body>
+
+<div id="welcome">
+<div class="logo">D & E</div>
+<div>
+<button class="fancy-btn" onclick="enter()">Yes 🤍</button>
+<button class="fancy-btn" onclick="alert('🥺 try again')">No 🥺</button>
+</div>
+</div>
+
+<div id="site">
+<main>
+
+<section id="home" class="active">
+<h2 style="color:#f5a7c1;font-family:Dancing Script;text-align:center">Welcome, Daisy 💖</h2>
+<p style="text-align:center">This little place is a tiny memory box for us. Scroll or use the menu to jump around.</p>
+
+<div class="menu">
+<div onclick="openSection('notes')">💌 Notes</div>
+<div onclick="openSection('gallery')">📸 Gallery</div>
+<div onclick="openSection('days')">⏳ Countdown</div>
+</div>
+</section>
+
+<section id="notes">
+<div class="back" onclick="openSection('home')">← Menu</div>
+<div class="tabs">
+<div class="tab active" onclick="switchTab('emi')" id="emiTab">Emi 💖</div>
+<div class="tab" onclick="switchTab('daisy')" id="daisyTab">Daisy 🌸</div>
+</div>
+<button class="fancy-btn" onclick="openNewNote()">+ New Note</button>
+<div id="notesList"></div>
+</section>
+
+<section id="gallery">
+<div class="back" onclick="openSection('home')">← Menu</div>
+<h3>Gallery (coming soon 💖)</h3>
+</section>
+
+<section id="days">
+<div class="back" onclick="openSection('home')">← Menu</div>
+<h3>Countdown</h3>
+<div id="countdowns"></div>
+</section>
+
+</main>
+</div>
+
+<div id="newNotePage">
+<div onclick="closeNewNote()" class="back">← Back</div>
+<input id="title" placeholder="Title">
+<textarea id="content" placeholder="Start writing..."></textarea>
+<button class="fancy-btn" onclick="saveNote()">Save</button>
+</div>
+
+<div id="letter">
+<div onclick="closeLetter()" class="back">← Back</div>
+<h2 id="letterTitle"></h2>
+<p id="letterTime"></p>
+<p id="letterContent"></p>
+</div>
+
+<script>
+
+setInterval(()=>{
+let h=document.createElement('div')
+h.className='heart'
+h.innerText='❤'
+h.style.left=Math.random()*100+'vw'
+h.style.animationDuration=(4+Math.random()*3)+'s'
+document.body.appendChild(h)
+setTimeout(()=>h.remove(),7000)
+},800)
+
+function enter(){welcome.style.display='none';site.style.display='block'}
+function openSection(id){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+
+let current='emi'
+function switchTab(tab){current=tab;emiTab.classList.toggle('active',tab==='emi');daisyTab.classList.toggle('active',tab==='daisy');renderNotes()}
+
+function getNotes(){return JSON.parse(localStorage.getItem(current)||'[]')}
+
+function openNewNote(){newNotePage.style.display='flex'}
+function closeNewNote(){newNotePage.style.display='none'}
+
+function saveNote(){
+let notes=getNotes()
+notes.push({title:title.value,content:content.value,time:new Date().toLocaleString()})
+localStorage.setItem(current,JSON.stringify(notes))
+closeNewNote()
+renderNotes()
+}
+
+function renderNotes(){
+notesList.innerHTML=''
+getNotes().forEach(n=>{
+let div=document.createElement('div')
+div.className='note'
+div.innerHTML=`<b>${n.title}</b><br><small>${n.time}</small>`
+div.onclick=()=>openLetter(n)
+notesList.appendChild(div)
+})
+}
+
+function openLetter(n){letter.style.display='flex';letterTitle.innerText=n.title;letterTime.innerText=n.time;letterContent.innerText=n.content}
+function closeLetter(){letter.style.display='none'}
+
+renderNotes()
+
+const events=[
+{name:"Daisy's Birthday 🎂",date:new Date(new Date().getFullYear(),0,5)},
+{name:"Emi's Birthday 🎉",date:new Date(new Date().getFullYear(),11,10)}
+]
+
+function updateCountdown(){
+countdowns.innerHTML=''
+events.forEach(e=>{
+let now=new Date().getTime()
+let target=e.date.getTime()
+if(target<now){e.date.setFullYear(e.date.getFullYear()+1);target=e.date.getTime()}
+let diff=target-now
+let d=Math.floor(diff/(1000*60*60*24))
+let h=Math.floor((diff%(1000*60*60*24))/(1000*60*60))
+let m=Math.floor((diff%(1000*60*60))/(1000*60))
+let s=Math.floor((diff%(1000*60))/1000)
+let div=document.createElement('div')
+div.innerHTML=`${e.name}: ${d}d ${h}h ${m}m ${s}s`
+countdowns.appendChild(div)
+})
+}
+
+setInterval(updateCountdown,1000)
+updateCountdown()
+
+</script>
+</body>
+</html>
